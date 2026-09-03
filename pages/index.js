@@ -31,7 +31,7 @@ export default function Home() {
         setEndereco(data.dados.endereco || '')
         alert('✅ Dados extraídos com sucesso!')
       } else {
-        alert('❌ Erro: ' + (data.error || 'Não foi possível extrair os dados.'))
+        alert('❌ ' + (data.error || 'Erro ao extrair dados.'))
       }
     } catch (error) {
       alert('Erro ao buscar dados. Tente novamente.')
