@@ -12,10 +12,11 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Usando a zona 'serp_api1' (disponível no plano gratuito)
     const brightDataResponse = await axios.post(
       'https://api.brightdata.com/request',
       {
-        zone: 'web_unlocker',
+        zone: 'serp_api1',
         url: mapsLink,
         format: 'raw',
         data_format: 'html'
@@ -31,7 +32,7 @@ export default async function handler(req, res) {
 
     const html = brightDataResponse.data
 
-    // Extrair dados
+    // Extrair dados com regex (simplificado)
     const nameMatch = html.match(/<h1[^>]*>(.*?)<\/h1>/i) || 
                      html.match(/<meta property="og:title" content="(.*?)"/i)
     const nome = nameMatch ? nameMatch[1].trim() : 'Nome não encontrado'
@@ -46,14 +47,23 @@ export default async function handler(req, res) {
     const photoMatch = html.match(/<img[^>]*src="(https:\/\/lh3\.googleusercontent\.com\/[^"]+)"[^>]*>/i)
     const foto = photoMatch ? photoMatch[1] : ''
 
-    const dadosExtraidos = { nome, telefone, endereco, foto }
+    // Se não encontrou nada, retorna erro amigável
+    if (nome === 'Nome não encontrado' && telefone === 'Telefone não informado') {
+      return res.status(200).json({ 
+        success: false, 
+        error: 'Não foi possível extrair dados. O link pode ser privado ou o Google Maps mudou o layout.' 
+      })
+    }
 
-    return res.status(200).json({ success: true, dados: dadosExtraidos })
+    return res.status(200).json({ 
+      success: true, 
+      dados: { nome, telefone, endereco, foto } 
+    })
 
   } catch (error) {
-    console.error('Erro ao extrair dados:', error)
+    console.error('Erro Bright Data:', error.message)
     return res.status(500).json({ 
-      error: 'Erro ao buscar dados. Verifique o link e seus créditos Bright Data.' 
+      error: 'Erro ao buscar dados. Verifique sua chave API e créditos Bright Data.' 
     })
   }
 }
